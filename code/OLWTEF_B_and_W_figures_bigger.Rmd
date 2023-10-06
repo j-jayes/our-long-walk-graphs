@@ -1,0 +1,2403 @@
+---
+title: "OLWTEF"
+author: "JJayes"
+date: "05/09/2020"
+output: html_document
+fig_width: 6 
+fig_height: 4
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning=FALSE)
+
+rm(list = ls())
+
+```
+
+
+```{r cars}
+library(pacman)
+p_load(tidyverse, ggrepel)
+
+theme_set(theme_light())
+theme_update(
+  legend.position = "bottom",
+  text = element_text(size = 14),
+  legend.text = element_text(size = 14),
+  plot.caption = element_text(size = 12)
+)
+
+# key_crop_yields <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2020/2020-09-01/key_crop_yields.csv')
+# 
+# # clean names
+# key_crop_yields <- key_crop_yields %>% 
+#   janitor::clean_names() %>% 
+#   rename_all(str_remove, "_tonnes.*")
+# 
+# # data processing
+# yields_tidy <- key_crop_yields  %>% 
+#   pivot_longer(wheat:bananas, names_to = "crop", values_to = "yield") %>% 
+#   filter(!is.na(yield))
+# 
+# write_rds(yields_tidy, "yields_tidy.rds")
+
+```
+
+# How do we thrive?
+## Share of population living in extreme poverty by region
+
+Our world in data figures from Bourgion and Morrison, World Bank
+
+## Share of population living in absolute poverty
+
+```{r}
+
+# data cleaning and processing for poverty data
+df_pov <- readRDS("data/df_pov.rds")
+
+df_pov <- df_pov %>% 
+  filter(!is.na(stat))
+
+df_pov_graph <- df_pov %>%
+  filter(indicator_code == "SI.POV.DDAY",
+         year <= 2016,
+         country_name %in% c("South Africa", "Sub-Saharan Africa", "South Asia", "World", "Middle East & North Africa", "East Asia % Pacific", 
+                                  #"Latin America & Caribbean", 
+                                  "Europe & Central Asia")) %>% 
+  mutate(country_name = fct_reorder(country_name, -stat))
+
+
+df_pov_world <- df_pov_graph %>% 
+  filter(country_name == "World") %>% 
+  select(label = country_name,
+         year,
+         stat) %>% 
+  mutate(label = fct_recode(label, "Living on less than $1.9 per day" = "World"))
+
+library(readxl)
+
+share_of_pop_in_absolute_poverty_bourguinon <- read_excel("data/share of pop in absolute poverty_bourguinon.xlsx")
+
+df_pov_comp <- rbind(df_pov_world, share_of_pop_in_absolute_poverty_bourguinon)
+
+
+```
+
+Share of population living in absolute poverty: Colours
+
+```{r}
+df_pov_comp %>% 
+  ggplot() +
+  geom_line(aes(year, stat, colour = label, lty = label), cex = 1) +
+  scale_y_continuous(labels = scales::percent_format(scale = 1)) + 
+  expand_limits(y = 0) +
+  expand_limits(y = 100) +
+  # scale_colour_brewer(type = "seq", palette = "Greys") +
+  scale_colour_brewer(palette = "Dark2") +
+  theme(legend.position = "bottom") +
+  labs(y = "", 
+       x = "",
+       # title = "Share of population living in absolute poverty, 1820-2015",
+       # subtitle = "GDP per capita adjusted for price changes over time (inflation) and price differences between countries - it is measured in international-$ in 2011 prices",
+       lty = " ",
+       colour = " ",
+       caption = "Source: Our World in Data") +
+  guides(colour = guide_legend(nrow=3,byrow=TRUE))
+
+```
+
+Share of population living in absolute poverty: Thick, dotted grey lines
+
+```{r}
+df_pov_comp %>% 
+  ggplot() +
+  geom_line(aes(year, stat, colour = label, lty = label), cex = 1) +
+  scale_y_continuous(labels = scales::percent_format(scale = 1)) + 
+  expand_limits(y = 0) +
+  expand_limits(y = 100) +
+  # scale_colour_brewer(type = "seq", palette = "Greys") +
+  scale_colour_grey(start = 0.8, end = 0.2) +
+  theme(legend.position = "bottom") +
+  labs(y = "", 
+       x = "",
+       #title = "Share of population living in absolute poverty, 1820-2015",
+       # subtitle = "GDP per capita adjusted for price changes over time (inflation) and price differences between countries - it is measured in international-$ in 2011 prices",
+       lty = " ",
+       colour = " ",
+       caption = "Source: Our World in Data") +
+  guides(colour = guide_legend(nrow=3,byrow=TRUE))
+
+```
+
+Share of population living in absolute poverty: Thin dotted lines
+
+```{r}
+df_pov_comp %>% 
+  ggplot() +
+  geom_line(aes(year, stat, lty = label), cex = 1) +
+  scale_y_continuous(labels = scales::percent_format(scale = 1)) + 
+  expand_limits(y = 0) +
+  expand_limits(y = 100) +
+  theme(legend.position = "bottom") +
+  labs(y = "", 
+       x = "",
+       #title = "Share of population living in absolute poverty, 1820-2015",
+       # subtitle = "GDP per capita adjusted for price changes over time (inflation) and price differences between countries - it is measured in international-$ in 2011 prices",
+       lty = " ",
+       caption = "Source: Our World in Data") +
+  guides(lty = guide_legend(nrow=3,byrow=TRUE))
+
+```
+
+Share of population living in absolute poverty: shaded lines
+
+```{r}
+df_pov_comp_lables <- df_pov_comp %>% 
+  group_by(label) %>% 
+  filter(year == max(year))
+
+jpeg(
+    filename="graphs_afr/1.1.jpeg",
+    width=8,
+    height=6,
+    units="in",
+    res=1000)
+
+df_pov_comp %>% 
+  ggplot() +
+  geom_line(aes(year, stat, colour = label), cex = 1) +
+  geom_text(data = df_pov_comp_lables, aes(year, stat, label = label), vjust = 1, hjust = 1, size = 5) +
+  scale_y_continuous(labels = scales::percent_format(scale = 1)) + 
+  expand_limits(y = 0) +
+  expand_limits(y = 100) +
+  scale_colour_grey(start = 0.8, end = 0.2) +
+  theme(legend.position = "none") +
+        # panel.grid.major.x = element_line(colour = "grey"),
+        # panel.grid.minor.x = element_line(colour = "grey")) +
+  labs(x = NULL, 
+       y = "Share of population living in absolute poverty",
+       # title = "Share of population living in absolute poverty, 1820-2015",
+       # subtitle = "GDP per capita adjusted for price changes over time (inflation) and price differences between countries - it is measured in international-$ in 2011 prices",
+       colour = " ",
+       caption = "Source: Our World in Data, Bourguinon and Morrison (2002), World Bank (2015)") +
+  guides(colour = guide_legend(nrow=3,byrow=TRUE))
+
+dev.off()
+
+```
+
+### Share of population living in extreme poverty by world region
+
+```{r}
+df <- read.csv("data/WDIData.csv")
+
+df <- df %>% 
+  janitor::clean_names()
+
+df_pov <- df %>% 
+  filter(indicator_code %in% c("SI.POV.DDAY", "SI.POV.MDIM", "SI.POV.LMIC.GP", "SI.POV.GINI")) %>% as_tibble()
+
+df_pov <- df_pov %>% 
+  pivot_longer(x1960:x2019, names_to = "year", values_to = "stat") %>% 
+  select(-x) %>% 
+  mutate(year = parse_number(year)) %>% 
+  rename(country_name = i_country_name)
+
+write_rds(df_pov, "data/df_pov.rds")
+
+
+```
+
+```{r}
+# df_pov %>% 
+#   filter(country_code %in% c("DOM", "DZA", "EAP")) %>% 
+#   ggplot(aes(year, stat, lty = country_name)) +
+#   geom_line() +
+#   facet_wrap(~ indicator_name) + 
+#   scale_color_brewer(type = "qual", name = "Country") +
+#   theme(legend.position = "bottom")
+# 
+# g <- df_pov %>% 
+#   filter(!is.na(stat)) %>% 
+#   ggplot(aes(year, stat, group = country_code)) +
+#   geom_line() +
+#   facet_wrap(~ indicator_name)
+# 
+# # trying gghighlight
+# df_pov %>% 
+#   filter(!is.na(stat)) %>% 
+#   ggplot() +
+#   geom_line(aes(year, stat, colour = country_code)) +
+#   gghighlight(country_code == "DOM") +
+#   facet_wrap(~ indicator_name)
+
+
+```
+
+Share of population living in extreme poverty by region: Colours
+
+```{r}
+df_pov_graph %>% 
+  ggplot() +
+  geom_line(aes(year, stat, colour = country_name), cex = 1) +
+  # geom_text_repel(data = df_pov_graph %>%
+  #                   group_by(country_name) %>% 
+  #                   filter(year == max(year)), 
+  #                 aes(year, stat, label = country_name),
+  #                 hjust = -1, vjust = 1) +
+  scale_y_continuous(labels = scales::percent_format(scale = 1)) + 
+  scale_color_brewer(palette = "Dark2") +
+  theme(legend.position = "bottom") +
+  labs(y = "", 
+       x = "",
+       # title = "Share of population living in extreme poverty by region",
+       # subtitle = "GDP per capita adjusted for price changes over time (inflation) and price differences between countries \n It is measured in international-$ in 2011 prices",
+       caption = "Source: World Bank World Development Indicators", colour = "Region")
+```
+
+Share of population living in extreme poverty by region: Thin dotted lines and legend
+
+```{r}
+
+df_pov_graph %>% 
+  ggplot() +
+  geom_line(aes(year, stat, lty = country_name)) +
+  # geom_text_repel(data = df_pov_graph %>%
+  #                   group_by(country_name) %>% 
+  #                   filter(year == max(year)), 
+  #                 aes(year, stat, label = country_name),
+  #                 hjust = -1, vjust = 1) +
+  scale_y_continuous(labels = scales::percent_format(scale = 1)) + 
+  theme(legend.position = "bottom") +
+  labs(y = "", 
+       x = "",
+       # title = "Share of population living in extreme poverty by region",
+       # subtitle = "GDP per capita adjusted for price changes over time (inflation) and price differences between countries \n It is measured in international-$ in 2011 prices",
+       caption = "Source: World Bank World Development Indicators", linetype = "Region")
+
+```
+
+Share of population living in extreme poverty by region: Thick dotted lines and grey shading - labels in pane and no legend
+
+# Chapter 33
+
+```{r}
+
+jpeg(
+    filename="graphs_3/33.1_v1.jpeg",
+    width=8,
+    height=6,
+    units="in",
+    res=1000)
+
+
+df_pov_graph %>% 
+  ggplot() +
+  geom_line(aes(year, stat, colour = country_name), cex = 1) +
+  geom_text_repel(data = df_pov_graph %>% 
+                    group_by(country_name) %>% 
+                    filter(year == max(year)), 
+                  aes(year, stat, label = country_name),
+                  size = 5) +
+  scale_y_continuous(labels = scales::percent_format(scale = 1)) + 
+  scale_colour_grey(start = 0.8, end = 0.2) +
+  expand_limits(x = 2020) +
+  # scale_colour_brewer(type = "seq", palette = "Greys",  name = "Region") +
+  theme(legend.position = "none") +
+  labs(y = "Percentage of population living in extreme poverty", 
+       x = NULL,
+       # title = "Share of population living in extreme poverty by region",
+       # subtitle = "GDP per capita adjusted for price changes over time (inflation) and price differences between countries \n It is measured in international-$ in 2011 prices",
+       caption = "Source: World Bank World Development Indicators")
+
+dev.off()
+
+```
+
+```{r}
+jpeg(
+    filename="graphs_3/33.1_v2.jpeg",
+    width=8,
+    height=6,
+    units="in",
+    res=1000)
+
+
+df_pov_graph %>% 
+  ggplot(aes(year, stat, colour = country_name, lty = country_name, shape = country_name)) +
+  geom_line(size = 1.4) +
+  geom_point(size = 3) +
+  scale_y_continuous(labels = scales::percent_format(scale = 1)) + 
+  scale_colour_grey(start = 0.8, end = 0.2) +
+  # expand_limits(x = 2020) +
+  # scale_colour_brewer(type = "seq", palette = "Greys",  name = "Region") +
+  theme(legend.position = "bottom") +
+  labs(y = "Percentage of population living in extreme poverty", 
+       x = NULL,
+       shape = NULL,
+       colour = NULL,
+       lty = NULL,
+       # title = "Share of population living in extreme poverty by region",
+       # subtitle = "GDP per capita adjusted for price changes over time (inflation) and price differences between countries \n It is measured in international-$ in 2011 prices",
+       caption = "Source: World Bank World Development Indicators")
+
+dev.off()
+```
+
+
+Share of population living in extreme poverty by region: Shaded thick dotted line and a legend
+
+```{r}
+
+df_pov_graph %>% 
+  ggplot() +
+  geom_line(aes(year, stat, colour = country_name, lty = country_name), cex = 2) +
+  # geom_text_repel(data = df_pov_graph %>%
+  #                   group_by(country_name) %>% 
+  #                   filter(year == max(year)), 
+  #                 aes(year, stat, label = country_name),
+  #                 hjust = -1, vjust = 1) +
+  scale_y_continuous(labels = scales::percent_format(scale = 1)) + 
+  # scale_colour_brewer(type = "seq", palette = "Greys",  name = "Region") +
+  scale_colour_grey(start = 0.8, end = 0.2) +
+  theme(legend.position = "bottom") +
+  labs(y = "", 
+       x = "",
+       # title = "Share of population living in extreme poverty by region",
+       # subtitle = "GDP per capita adjusted for price changes over time (inflation) and price differences between countries \n It is measured in international-$ in 2011 prices",
+       caption = "Source: World Bank World Development Indicators",
+       colour = "Region", linetype = "Region")
+
+```
+
+Share of population living in extreme poverty by region: Thinner dotted line and a legend
+
+```{r}
+df_pov_graph %>% 
+  ggplot() +
+  geom_line(aes(year, stat, colour = country_name, lty = country_name), cex = .8) +
+  # geom_text_repel(data = df_pov_graph %>%
+  #                   group_by(country_name) %>% 
+  #                   filter(year == max(year)), 
+  #                 aes(year, stat, label = country_name),
+  #                 hjust = -1, vjust = 1) +
+  scale_y_continuous(labels = scales::percent_format(scale = 1)) + 
+  # scale_colour_brewer(type = "seq", palette = "Greys",  name = "Region") +
+  scale_colour_grey(start = 0.8, end = 0.2) +
+  theme(legend.position = "bottom") +
+  labs(y = "", 
+       x = "",
+       # title = "Share of population living in extreme poverty by region",
+       # subtitle = "GDP per capita adjusted for price changes over time (inflation) and price differences between countries \n It is measured in international-$ in 2011 prices",
+       caption = "Source: World Bank World Development Indicators",
+       colour = "Region", linetype = "Region")
+
+```
+
+
+..
+
+All of the following plots can be done with any selection of these styles, as you like the look most.
+
+..
+
+
+```{r}
+
+df_gdp <- df %>% 
+  filter(indicator_code %in% c("NY.GDP.PCAP.KD", "NY.GDP.PCAP.KN", "NY.GDP.PCAP.CN", "NY.GDP.PCAP.CD")) %>% as_tibble()
+
+df_gdp <- df_gdp %>% 
+  pivot_longer(x1960:x2019, names_to = "year", values_to = "stat") %>% 
+  select(-x) %>% 
+  mutate(year = parse_number(year))
+
+# write data
+write_rds(df_gdp, "data/df_gdp.rds")
+# 
+# df_gdp %>%
+#   filter(country_code %in% c("DOM", "DZA", "EAP")) %>%
+#   ggplot(aes(year, stat, colour = i_country_name)) +
+#   geom_line() +
+#   facet_wrap(~ indicator_name, scales = "free_y") +
+#   scale_color_brewer(type = "qual", name = "Country") +
+#   theme(legend.position = "bottom")
+
+# # gghighlight again
+# df_gdp %>%
+#   filter(indicator_code == "NY.GDP.PCAP.KD") %>%
+#   ggplot() +
+#   geom_line(aes(year, stat, colour = i_country_name)) +
+#   gghighlight(i_country_name %in% c("South Africa", "China", "Brazil", "United States")) +
+#   scale_y_continuous(labels = scales::comma_format(big.mark = " ")) +
+#   labs(y = "GDP per capita (constant 2010 US$)",
+#        x = "Year",
+#        title = "GDP per capita growth since 1960")
+# 
+# p_load(devtools)
+# devtools::install_github("yutannihilation/gghighlight")
+
+
+```
+
+# Chapter 1: Who are the architects of Wakanda? African economic historians and the stories we tell
+
+### GDP per capita 1000 to 2016
+
+(Choice of countries here can be changed)
+
+```{r}
+df_mad <- read.csv("data/maddison_project_database.csv")
+
+df_mad <- df_mad %>% 
+  janitor::clean_names() %>% 
+  as_tibble()
+
+df_mad <- df_mad %>%
+  pivot_longer(cgdppc:pop, names_to = "indicator_name", values_to = "stat") %>% 
+  select(- i_cig, - i_bm)
+
+df_mad <- df_mad %>%
+  mutate(indicator_code = indicator_name,
+         indicator_name = recode(indicator_code, pop = "Population", cgdppc ="Real GDP per capita in 2011US$ (for income comparisons)", rgdpnapc = "Real GDP per capita in 2011US$ (for growth comparisons)")) %>% 
+  rename(country_code = i_countrycode,
+         country_name = country)
+
+# write_rds(df_mad, "data/maddison_project_database.rds")
+```
+
+GDP per capita growth since 1000: colours
+
+```{r}
+df_mad_plot_countries <- c("United States, South Africa", "South Korea", "Botswana", "United Kingdom", "Zambia", "United States", "Argentina", "Nigeria")
+
+df_mad_plot <- df_mad %>%
+  filter(country_name %in% df_mad_plot_countries,
+         indicator_code == "rgdpnapc",
+         year > 1000) 
+
+p_load(gghighlight)
+
+df_mad_plot %>% 
+  ggplot() +
+  geom_line(aes(year, stat, colour = country_name)) +
+  gghighlight(country_name %in% df_mad_plot_countries) +
+  scale_colour_brewer(type = "qual", palette = "Dark2",  name = "Country") +
+  # geom_text_repel(data = df_mad %>%
+  #             filter(country_name %in% df_mad_plot_countries,
+  #             indicator_code == "rgdpnapc",
+  #        year == max(year)),
+  #   aes(year, stat, label = country_name, hjust = -.4)) +
+  scale_y_continuous(labels = scales::comma_format(big.mark = " ")) + 
+  expand_limits(x = 2050) +
+  labs(y = "GDP per capita (constant 2010 US$)", 
+       x = "Year",
+       # title = "GDP per capita growth since 1000",
+       caption = "Source: Maddison Project Database (2018)") +
+  theme(legend.position = "bottom",
+        legend.title = element_blank())
+
+```
+
+GDP per capita growth since 1000: Thin dotted lines, labels in pane and a legend.
+
+```{r}
+
+jpeg(
+    filename="graphs_3/1.2_v3.jpeg",
+    width=8,
+    height=6,
+    units="in",
+    res=1000)
+
+df_mad_plot %>%
+  ggplot() +
+  geom_line(aes(year, stat, lty = country_name)) +
+  geom_text(
+    data = df_mad %>%
+      filter(
+        country_name %in% df_mad_plot_countries,
+        indicator_code == "rgdpnapc",
+        year == max(year)
+      ),
+    aes(year, stat, label = country_name, hjust = -.01),
+    size = 5
+  ) +
+  scale_y_continuous(labels = scales::dollar_format(big.mark = " ")) +
+  scale_x_continuous(limits = c(1100, 2250)) +
+  labs(
+    y = "GDP per capita (constant 2010 US$)",
+    x = NULL,
+    # title = "GDP per capita growth since 1000",
+    caption = "Source: Maddison Project Database (2018)"
+  ) +
+  theme(
+    legend.position = "none",
+    legend.title = element_blank()
+  )
+
+dev.off()
+```
+
+
+GDP per capita growth since 1000: Grey shading and legend
+
+```{r}
+df_mad_plot %>% 
+  ggplot() +
+  geom_line(aes(year, stat, colour = country_name), cex = 1) +
+  geom_text_repel(data = df_mad %>%
+              filter(country_name %in% df_mad_plot_countries,
+              indicator_code == "rgdpnapc",
+         year == max(year)),
+    aes(year, stat, label = country_name, hjust = -.4)) +
+  # scale_color_brewer(palette = "Greys") +
+  scale_colour_grey(start = 0.8, end = 0.2) +
+  scale_y_continuous(labels = scales::comma_format(big.mark = " ")) + 
+  expand_limits(x = 2050) +
+  labs(y = "GDP per capita (constant 2010 US$)", 
+       x = "Year",
+       # title = "GDP per capita growth since 1000",
+       caption = "Source: Maddison Project Database (2018)") +
+  theme(legend.position = "bottom",
+        legend.title = element_blank())
+
+# with ggghighlight
+# df_mad %>%
+#   filter(indicator_code == "rgdpnapc",
+#          stat < 50000,
+#          year > 1000) %>% 
+#   ggplot() +
+#   geom_line(aes(year, stat, colour = country_name)) +
+#   gghighlight(country_name %in% c("South Africa", "China", "Botswana", "United Kingdom", "Zambia")) + 
+#   scale_y_continuous(labels = scales::comma_format(big.mark = " ")) + 
+#   scale_colour_brewer(type = "qual", palette = "Dark2",  name = "Country") +
+#   labs(y = "GDP per capita (constant 2010 US$)", 
+#        x = "Year",
+#        title = "GDP per capita growth since 1960",
+#        caption = "Source: World Bank World Development Indicators")
+
+```
+
+GDP per capita growth since 1000: Grey shading and dotted lines - no legend
+
+```{r}
+
+df_mad_plot %>% 
+  ggplot() +
+  geom_line(aes(year, stat, colour = country_name, lty = country_name), cex = 1) +
+  geom_text_repel(data = df_mad %>%
+              filter(country_name %in% df_mad_plot_countries,
+              indicator_code == "rgdpnapc",
+         year == max(year)),
+    aes(year, stat, label = country_name, hjust = -.4)) +
+  scale_color_grey(start = 0.8, end = 0.2) +
+  scale_y_continuous(labels = scales::comma_format(big.mark = " ")) + 
+  expand_limits(x = 2050) +
+  labs(y = "GDP per capita (constant 2010 US$)", 
+       x = "Year",
+       # title = "GDP per capita growth since 1000",
+       caption = "Source: Maddison Project Database (2018)") +
+  theme(legend.position = "none",
+        legend.title = element_blank())
+
+```
+
+
+
+#Chapter 2: What happened at Blombos in 70000 BCE? The Out-of-Africa hypothesis and the peopling of the world
+
+### Ashraf and Galor
+Observed genetic heterogeneity and log population density: Colours
+
+```{r}
+library(readxl)
+ashraf_and_galor <- read_excel("data/ashraf and galor.xlsx")
+
+ashraf_and_galor %>% 
+  ggplot(aes(x, y)) +
+  geom_point(aes(x, y, colour = continent, shape = continent), cex = 2.5) +
+  geom_hline(yintercept = 0, lty = 2) +
+  stat_smooth(method = "lm", formula = y ~ x + I(x^2), cex = 1, colour = "darkred", lty =2) +
+  geom_text_repel(aes(x, y, label = country_name)) +
+  scale_shape_manual(values = seq(15,19, by = 1)) +
+  scale_color_brewer(palette = "Dark2") +
+  labs(x = "Genetic homogeneity (observed)",
+       y = "Log of population density in 1500 CE",
+       caption = "Source: Ashraf and Galor (2013)") +
+  theme_classic() +
+  theme(legend.title = element_blank())  +
+  theme(legend.position = "bottom")
+
+```
+
+Observed genetic heterogeneity and log population density: greyscale
+
+```{r}
+
+jpeg(
+    filename="graphs_3/2.1_v3.jpeg",
+    width=8,
+    height=6,
+    units="in",
+    res=1000)
+
+ashraf_and_galor %>% 
+  ggplot(aes(x, y)) +
+  geom_hline(yintercept = 0, lty = 2) +
+  stat_smooth(method = "lm", formula = y ~ x + I(x^2), cex = 1, colour = "darkgrey") +
+  geom_point(aes(x, y, shape = continent), cex = 2.5) +
+  geom_text_repel(aes(x, y, label = country_name),
+                  size = 4) +
+  scale_shape_manual(values = seq(15,20, by = 1)) +
+  labs(x = "Genetic homogeneity (observed)",
+       y = "Log of population density in 1500 CE",
+       caption = "Source: Ashraf and Galor (2013)") +
+  # theme_classic() +
+  theme(legend.title = element_blank())  +
+  theme(legend.position = "bottom")
+
+dev.off()
+
+```
+
+
+# Chapter 3: Why are the Danes so individualistic? The Neolithic Revolution and the rise of civilizations
+
+Olsson and Paik figure attached to email.
+
+# Chapter 4: Why does isiXhosa have clicks? The Bantu migration
+
+Map attached to email.
+
+```{r}
+p_load(tidygeocoder, igraph)
+
+library("rnaturalearth")
+library("rnaturalearthdata")
+
+world <- ne_countries(scale = "medium", returnclass = "sf")
+
+arrow_areas <- c("yaounde, cameroon",
+             "kigali, rwanda",
+            "huambo, angola") %>% as_tibble()
+
+arrow_areas_2 <- c("shinyanga, tanzania",
+             "masasi, tanzania",
+            "lilongwe, malawi",
+            "cuvelai, angola") %>% as_tibble()
+
+arrow_areas_3 <- c("mbeya, tanzania",
+                    "Pietermaritzburg, south africa",
+                    "pretoria, south africa",
+                    "windhoek, namibia") %>% as_tibble()
+
+
+
+# arrow_areas_coords <- arrow_areas %>% geocode(address = value, method = "osm", lat = lat1, long = long1)
+# 
+# write_rds(arrow_areas_coords, "data/arrow_areas_coords.rds")
+
+arrow_areas_coords <- read_rds("data/arrow_areas_coords.rds")
+
+
+# arrow_areas_2_coords <- arrow_areas_2 %>% geocode(address = value, method = "osm", lat = lat1, long = long1)
+# 
+# write_rds(arrow_areas_2_coords, "data/arrow_areas_2_coords.rds")
+
+arrow_areas_2_coords <- read_rds("data/arrow_areas_2_coords.rds")
+
+
+# arrow_areas_3_coords <- arrow_areas_3 %>% geocode(address = value, method = "osm", lat = lat2, long = long2)
+# 
+# write_rds(arrow_areas_3_coords, "data/arrow_areas_3_coords.rds")
+
+arrow_areas_3_coords <- read_rds("data/arrow_areas_3_coords.rds")
+
+
+arrow_areas_3_coords <- arrow_areas_3_coords %>% 
+  rename(value1 = value)
+
+arrow_directions_2 <- cbind(arrow_areas_2_coords, arrow_areas_3_coords) %>% 
+  as_tibble() %>% select(-value, -value1)
+
+yaonde <- arrow_areas_coords %>% filter(value == "yaounde, cameroon")
+
+arrow_directions_1 <- arrow_areas_coords %>%
+  filter(!value == "yaounde, cameroon") %>% 
+  mutate(lat2 = yaonde$lat1,
+         long2 = yaonde$long1) %>% 
+  select(-value)
+
+bm_labels <- tibble(
+  x = c(22, 36, 12),
+  y = c(-3, -25, 9),
+  label = c("Spread of Bantu Speakers \n by 3000 BP", "Spread of Bantu Speakers \n by 1500 BP", "Bantu Homeland \n by 4000 BP"))
+```
+
+```{r}
+
+jpeg(
+    filename="graphs_3/4.1_v3.jpeg",
+    width=8,
+    height=6,
+    units="in",
+    res=1000)
+
+
+ggplot(data = world) +
+  geom_point(data = arrow_areas_coords, aes(long1, lat1)) +
+  geom_sf(colour = "white") +
+  coord_sf(ylim=c(-35,10), xlim = c(-10,50)) +
+  geom_curve(data = arrow_directions_1,
+             aes(y = lat2, x = long2, yend = lat1, xend = long1),
+             curvature = -.3,
+             cex = 1.2,
+             arrow = arrow(length = unit(0.02, "npc"), type = "closed"), lty = 1, colour = "#a9a9a9") +
+    geom_curve(data = arrow_directions_2,
+             aes(y = lat1, x = long1, yend = lat2, xend = long2),
+             curvature = .3,
+             cex = 1.2,
+             arrow = arrow(length = unit(0.02, "npc"), type = "closed"), lty = 2) +
+  geom_point(data = yaonde, aes(long1, lat1), shape = 19, cex = 7) +
+  geom_text_repel(data = bm_labels, aes(x, y, label = label), size = 5) +
+  labs(x = "",
+       y = "",
+       caption = "Source: Wikipedia - 'Bantu expansion'") +
+  theme_void()
+
+dev.off()
+
+```
+
+
+```{r}
+# ggplot(data = world) +
+#   geom_point(data = arrow_areas_coords, aes(long1, lat1)) +
+#   geom_sf(colour = "white") +
+#   coord_sf(ylim=c(-35,10), xlim = c(-10,50)) +
+#   geom_curve(data = arrow_directions_1, 
+#              aes(y = lat2, x = long2, yend = lat1, xend = long1),
+#              curvature = -.3,
+#              cex = 1.2,
+#              arrow = arrow(length = unit(0.02, "npc"), type = "closed"), lty = 1, colour = "#a9a9a9") +
+#     geom_curve(data = arrow_directions_2, 
+#              aes(y = lat1, x = long1, yend = lat2, xend = long2),
+#              curvature = .3,
+#              cex = 1.2,
+#              arrow = arrow(length = unit(0.02, "npc"), type = "closed"), lty = 2) +
+#   geom_point(data = yaonde, aes(long1, lat1), shape = 19, cex = 7) +
+#   geom_text_repel(data = bm_labels, aes(x, y, label = label), cex = 4) +
+#   theme_void()
+
+```
+
+# Chapter 8: Who was the richest man to ever live? The spread of Islam in Africa and the Crusades
+
+## Timeline of Jerusalem
+
+Timeline of Jerusalem: Dotted lines - labels on y-axis
+
+(Can change source here if you would prefer not to cite Wikipedia)
+
+```{r}
+timeline_of_jerusalem <- read_excel("data/timeline of jerusalem.xlsx")
+
+timeline_of_jerusalem <- timeline_of_jerusalem %>% 
+  rowwise() %>% 
+  mutate(mymean = mean(c(date_start,date_end) )) %>% 
+  arrange(desc(mymean)) %>% 
+  mutate(period = factor(period))
+
+timeline_of_jerusalem %>% 
+  ggplot() +
+  geom_segment(aes(y =period, yend = period, x = date_start, xend = date_end, lty = religion), cex = 1) +
+  # geom_point(aes(x = date_start, y = period, shape = religion)) + 
+  theme(legend.title = element_blank()) +
+  theme(legend.position = "bottom") +
+  labs(x = "Date", 
+       y = "",
+       caption = "Source: Wikipedia - Timeline of Jerusalem")
+
+```
+
+Timeline of Jerusalem: Shades of grey - labels on y-axis
+
+```{r}
+
+timeline_of_jerusalem %>% 
+  ggplot() +
+  geom_segment(aes(y =period, yend = period, x = date_start, xend = date_end, colour = religion), cex = 3) +
+  # geom_point(aes(x = date_start, y = period, shape = religion)) + 
+  theme(legend.title = element_blank()) +
+  scale_color_grey(start = 0.8, end = 0.2) +
+  theme(legend.position = "bottom") +
+  labs(x = "Date", 
+       y = "",
+       caption = "Source: Wikipedia - Timeline of Jerusalem")
+
+```
+
+Timeline of Jerusalem: Alternate dotted lines - labels beside lines
+
+```{r}
+timeline_of_jerusalem %>% 
+  ggplot() +
+  geom_segment(aes(y =period, yend = period, x = date_start, xend = date_end, lty = religion), cex = 1) +
+  geom_point(aes(x = date_start, y = period, shape = religion)) + 
+  theme_classic() +
+  geom_text(aes(x = date_end, y = period, label = period, hjust = -.1), cex = 2.5) +
+  scale_shape_manual(values = seq(15,19, by = 1)) +
+  scale_x_continuous(breaks = seq(-2000, 2000, by = 500)) +
+  theme(legend.title = element_blank(),
+        axis.text.y = element_blank(),
+        axis.ticks = element_blank(),
+        axis.line.y = element_blank(),
+        legend.position = "bottom") +
+  labs(x = "", 
+       y = "",
+       caption = "Source: Wikipedia - Timeline of Jerusalem")
+```
+
+Timeline of Jerusalem:  Alternate shades of grey - labels beside lines.
+Personally I like this one the most.
+
+```{r}
+timeline_of_jerusalem %>% 
+  ggplot() +
+  geom_segment(aes(y =period, yend = period, x = date_start, xend = date_end, colour = religion), cex = 3) +
+  # geom_point(aes(x = date_start, y = period, shape = religion)) + 
+  theme_classic() +
+  geom_text(aes(x = date_end, y = period, label = period, hjust = -.1), cex = 2.5) +
+  scale_color_grey(start = 0.8, end = .2) +
+  scale_x_continuous(breaks = seq(-2000, 2000, by = 500)) +
+  expand_limits(x = 2500) +
+  # scale_shape_manual(values = seq(15,19, by = 1)) +
+  theme(legend.title = element_blank(),
+        axis.text.y = element_blank(),
+        axis.ticks = element_blank(),
+        axis.line.y = element_blank(),
+        legend.position = "bottom") +
+  labs(x = "", 
+       y = "",
+       caption = "Source: Wikipedia - Timeline of Jerusalem")
+
+# must fix y axis ticks
+
+# make grey lines thicker and diverge by 5 colours
+  
+```
+
+Timeline of Jerusalem: showing crusades with vertical lines - Johan, please correct the dates here?
+
+```{r}
+# making an index to select every second one
+
+timeline_of_jerusalem <- timeline_of_jerusalem %>% 
+  mutate(index = ifelse(rank %% 2 == 1, 1, 0))
+
+```
+
+
+```{r}
+jpeg(
+    filename="graphs_3/8.1_v6.jpeg",
+    width=8,
+    height=6,
+    units="in",
+    res=1000)
+
+timeline_of_jerusalem %>% 
+  ggplot() +
+  geom_vline(xintercept = c(1096, 1492), lty = 2) +
+  geom_segment(aes(y =period, yend = period, x = date_start, xend = date_end, colour = religion), cex = 3) +
+  # geom_point(aes(x = date_start, y = period, shape = religion)) + 
+  geom_text(data = timeline_of_jerusalem %>% filter(index == 1), aes(x = date_end, y = period, label = period, hjust = -.1), size = 4) +
+  scale_color_grey(start = 0.8, end = .2) +
+  scale_x_continuous(breaks = seq(-2000, 2000, by = 500)) +
+  expand_limits(x = 3000) +
+  guides(colour = guide_legend(nrow = 2)) +
+  # scale_shape_manual(values = seq(15,19, by = 1)) +
+  theme(legend.title = element_blank(),
+        axis.text.y = element_blank(),
+        axis.ticks = element_blank(),
+        axis.line.y = element_blank(),
+        legend.position = "bottom",
+        panel.grid = element_blank()) +
+  labs(x = "Year (BCE-CE)", 
+       y = "",
+       caption = "Note: Vertical lines indicate start and end of Crusades \nSource: Wikipedia - 'Timeline of Jerusalem'")
+
+dev.off()
+```
+
+Timeline of Jerusalem: Colours and showing crusades with vertical lines
+
+```{r}
+timeline_of_jerusalem %>% 
+  ggplot() +
+  geom_vline(xintercept = c(1096, 1492), lty = 2) +
+  geom_segment(aes(y =period, yend = period, x = date_start, xend = date_end, colour = religion), cex = 3) +
+  # geom_point(aes(x = date_start, y = period, shape = religion)) + 
+  geom_text(aes(x = date_end, y = period, label = period, hjust = -.1), cex = 2.5) +
+  scale_color_brewer(palette = "Dark2") +
+  scale_x_continuous(breaks = seq(-2000, 2000, by = 500)) +
+  expand_limits(x = 2500) +
+  # scale_shape_manual(values = seq(15,19, by = 1)) +
+  theme(legend.title = element_blank(),
+        axis.text.y = element_blank(),
+        axis.ticks = element_blank(),
+        axis.line.y = element_blank(),
+        legend.position = "bottom") +
+  labs(x = "", 
+       y = "",
+       caption = "Note: Vertical lines indicate start and end of Crusades \nSource: Wikipedia - 'Timeline of Jerusalem'")
+```
+
+
+# Chapter 11: Who visited Goree island on 27 June 2013? The Atlantic slave trade and Africa’s long-run development
+
+Attached to email.
+
+```{r}
+
+library(tidygeocoder)
+
+cities <- c("dakar, senegal",
+             "freetown, sierra leone",
+            "monrovia, liberia",
+            "abidjan, cote d'ivoire",
+            "lagos, nigeria",
+            "douala, cameroon",
+            "luanda, angola",
+            "beira, mozambique") %>% as_tibble()
+
+# cities_coords <- cities %>% geocode(address = value, method = "osm", lat = lat1, long = long1)
+# 
+# write_rds(cities_coords, "data/cities_coords.rds")
+
+cities_coords <- read_rds("data/cities_coords.rds")
+
+cities_coords <- cities_coords %>% 
+  mutate(value = str_to_title(value))
+
+senders <- c("rio de janeiro, brazil",
+             "san juan, puerto rico") %>% as_tibble()
+
+# senders_coords <- senders %>% geocode(address = value, method = "osm", lat = lat1, long = long1)
+# 
+# write_rds(senders_coords, "data/senders_coords.rds")
+
+senders_coords <- read_rds("data/senders_coords.rds")
+
+senders_coords <- senders_coords %>% 
+  mutate(value = str_to_title(value))
+
+carib <- senders_coords %>% filter(value == "San Juan, Puerto Rico")
+
+brazil <- senders_coords %>% filter(value == "Rio De Janeiro, Brazil")
+
+from_carib <- cities_coords %>% 
+  filter(!value %in% c("beira, mozambique"))
+
+from_brazil <- cities_coords %>% 
+  filter(value %in% c("Lagos, Nigeria", 
+                      "Luanda, Angola",
+                      "Beira, Mozambique"))
+
+carib_route <- from_carib %>% 
+  mutate(lat2 = carib$lat1,
+         long2 = carib$long1) %>% 
+  select(-value)
+
+brazil_route <- from_brazil %>% 
+  mutate(lat2 = brazil$lat1,
+         long2 = brazil$long1) %>% 
+  select(-value)
+
+```
+
+```{r}
+library(maps)
+
+# No margin
+par(mar=c(0,0,0,0))
+
+p_load(geosphere)
+
+coords <- rbind(cities_coords, senders_coords)
+
+# Show the cities on the map
+
+```
+
+```{r}
+# plot_my_connection = function( dep_lon, dep_lat, arr_lon, arr_lat, ...){
+#     inter <- gcIntermediate(c(dep_lon, dep_lat), c(arr_lon, arr_lat), n=50, addStartEnd=TRUE, breakAtDateLine=F)             
+#     inter=data.frame(inter)
+#     diff_of_lon=abs(dep_lon) + abs(arr_lon)
+#     if(diff_of_lon > 180){
+#         lines(subset(inter, lon>=0), ...)
+#         lines(subset(inter, lon<0), ...)
+#     }else{
+#         lines(inter, ...)
+#         }
+# }
+# 
+# map('world',
+#     col="#f2f2f2", fill=TRUE, bg="white", lwd=0.05,
+#     mar=rep(0,4),border=0, ylim=c(-60,40), xlim = c(-80,60)
+# )
+# 
+# for(i in 1:nrow(carib_route)){
+#     plot_my_connection(carib_route$long1[i], carib_route$lat1[i], carib_route$long2[i], carib_route$lat2[i], col="black", lwd=1)
+# }
+# 
+# for(i in 1:nrow(brazil_route)){
+#     plot_my_connection(brazil_route$long1[i], brazil_route$lat1[i], brazil_route$long2[i], brazil_route$lat2[i], col="black", lwd=1, lty = 2)
+#     }
+#  
+# 
+# 
+# # add points and names of cities
+# points(x=coords$long1, y=coords$lat1, col="black", cex=2, pch=18)
+# 
+# text(cities_coords$value, x=cities_coords$long1, y=cities_coords$lat1,  col="black", cex=.6, pos=4)
+# 
+# text(senders_coords$value, x=senders_coords$long1, y=senders_coords$lat1,  col="black", cex=.6, pos=1)
+```
+
+
+
+```{r}
+# Slave routes map: No labels
+
+library("rnaturalearth")
+library("rnaturalearthdata")
+
+world <- ne_countries(scale = "medium", returnclass = "sf")
+
+# ggplot(data = world) +
+#   geom_sf(colour = "white") +
+#   geom_point(data = coords, aes(long1, lat1), shape = 18, cex = 2) +
+#   coord_sf(ylim=c(-60,40), xlim = c(-80,60)) +
+#   geom_curve(data = carib_route,
+#              aes(y = lat2, x = long2, yend = lat1, xend = long1),
+#              curvature = -0.3,
+#              # arrow = arrow(length = unit(0.02, "npc"), type = "closed"), 
+#              lty = 2) +
+#   geom_curve(data = brazil_route, 
+#              aes(y = lat2, x = long2, yend = lat1, xend = long1),
+#              # arrow = arrow(length = unit(0.02, "npc"), type = "closed"), ) +
+#              lty = 1, curvature = 0.3) + 
+#   labs(x = "Longitude",
+#        y = "Latitude") +
+#   theme_void()
+
+```
+
+
+
+```{r}
+
+# Slave routes map: Labels
+
+wa_labels <- c("Senegambia",
+  "Sierra Leone",
+  "Windward Coast",
+  "Gold Coast",
+  "Bight of Benin",
+  "Bight of Biafra",
+  "West Central Africa",
+  "Southeast Africa",
+  "Brazil",
+  "Caribbean")
+
+from_carib_labels <- cbind(coords, wa_labels)
+
+jpeg(
+    filename="graphs_3/11.2_v3.jpeg",
+    width=8,
+    height=6,
+    units="in",
+    res=1000)
+
+
+ggplot(data = world) +
+  geom_sf(colour = "white") +
+  coord_sf(ylim=c(-60,40), xlim = c(-80,60)) +
+  geom_curve(data = carib_route,
+             aes(y = lat2, x = long2, yend = lat1, xend = long1),
+             curvature = 0.3, colour = "#a9a9a9",
+             lty = 2) +
+    geom_curve(data = brazil_route,
+             aes(y = lat2, x = long2, yend = lat1, xend = long1),
+             lty = 1, curvature = 0.3, colour = "#a9a9a9") +
+  geom_point(data = coords, aes(long1, lat1), shape = 18, cex = 2) +
+  geom_text_repel(data = from_carib_labels, aes(long1, lat1, label = wa_labels), 
+                  hjust = -.1, vjust = -.3, size = 5) +
+  labs(x = "",
+       y = "",
+       caption = "Source: Manning and Liu (2019)") +
+  theme_void()
+
+dev.off()
+
+```
+
+# Chapter 12: Books
+
+```{r}
+df_books <- read_excel("data/production of printed books.xlsx")
+
+df_books <- df_books %>% 
+  pivot_longer(!country, names_to = "period", values_to = "stat")
+
+df_books_labels <- df_books %>% 
+  group_by(country) %>% 
+  filter(period == "1751-1800") %>% 
+  ungroup()
+
+
+jpeg(
+    filename="graphs_3/12.1_v4.jpeg",
+    width=8,
+    height=6,
+    units="in",
+    res=1000)
+
+
+df_books %>% 
+  mutate(country = fct_reorder(country, stat, .fun = max)) %>% 
+  ggplot(aes(period, stat, lty = country, group = country)) +
+  geom_line(alpha = .8) +
+  geom_point() +
+  geom_text_repel(data = df_books_labels, aes(period, stat, label = country), hjust = -.1, size = 4.5) +
+  scale_y_continuous(labels = scales::comma_format(big.mark = " ")) +
+  theme(legend.position = "none") +
+  # theme(axis.text.x = element_text(angle = 45)) +
+  labs(y = "Production of printed books per half-century",
+       x = "",
+       caption = "Source: Buringh and Van Zanden (2009)",
+       lty = "")
+
+dev.off()
+```
+
+Dodge column
+
+```{r}
+jpeg(
+    filename="graphs_3/12.1_v2.jpeg",
+    width=8,
+    height=6,
+    units="in",
+    res=1000)
+
+df_books %>% 
+  mutate(country = fct_reorder(country, stat, .fun = max)) %>% 
+  ggplot(aes(period, stat, alpha = country)) +
+  geom_col(position = "dodge") +
+  scale_y_continuous(labels = scales::comma_format(big.mark = " ")) +
+  labs(y = "Production of printed books per half-century",
+       x = "",
+       caption = "Source: Buringh and Van Zanden (2009)",
+       alpha = "")
+
+dev.off()
+
+```
+
+# This is to incorporate the Great Divergence debate to Chapter 13
+
+```{r}
+library(readxl)
+
+df <- read_excel("data/Figure_13_1_china_cape.xlsx")
+
+df_labs <- df %>% 
+  pivot_longer(-year) %>% 
+  filter(name != "China",
+         !is.na(value)) %>% 
+  group_by(name) %>% 
+  filter(year == max(year)) %>% 
+  ungroup()
+
+jpeg(
+    filename="graphs_3/13.1_v3.jpeg",
+    width=8,
+    height=6,
+    units="in",
+    res=1000)
+
+df %>% pivot_longer(-year) %>% 
+  filter(name != "China") %>% 
+  ggplot(aes(year, value, colour = name, lty = name, shape = name)) +
+  geom_point() +
+  geom_line() +
+  # geom_text(aes(year, value, label = name), data = df_labs) +
+  scale_y_continuous(labels = scales::dollar_format()) +
+  expand_limits(y = 0) +
+  scale_color_grey(start = .2, end = .7) +
+  theme(legend.position = "bottom",
+        text = element_text(size = 14),
+        legend.text = element_text(size = 14),
+        plot.caption = element_text(size = 12)) +
+  guides(colour = guide_legend(nrow = 2)) +
+  labs(x = NULL,
+       y = "GDP per capita (1990 international dollars)",
+       colour = NULL,
+       shape = NULL,
+       lty = NULL,
+       caption = "Source: Fourie and Van Zanden (2013) & Broadberry, Guan and Li (2021)")
+
+dev.off()
+```
+
+
+# Chapter 16: Why was the Spinning Jenny not invented in India? Science, technology and the Industrial Revolution
+
+GDP per capita in England.
+Adjusted for inflation and measured in British Pounds in 2013 prices.
+
+```{r}
+
+df_gdp_england <- read.csv("data/GDP-per-capita-in-the-uk-since-1270.csv") %>% as_tibble() %>% 
+  select(year = Year,
+         gdp = Real.GDP.per.capita) %>% 
+  mutate(gdp = round(gdp))
+
+jpeg(
+    filename="graphs_3/16.1_v4.jpeg",
+    width=8,
+    height=6,
+    units="in",
+    res=1000)
+
+df_gdp_england %>% 
+  ggplot(aes(year, gdp)) +
+  geom_line(cex = 1) +
+  scale_y_continuous(labels = scales::unit_format(prefix = "£", suffix = "")) +
+  labs(#title = "GDP per capita in England",
+       # subtitle = "Adjusted for inflation and measured in British Pounds in 2013 prices",
+       x = NULL,
+       y = "GDP per capita in England (2013 GBP)",
+       caption = "Source: Broadberry, Campbell, Overton and Van Leeuwen (2015) via Bank of England (2020)")
+
+dev.off()
+```
+
+
+# Chapter 17: Why did railways hurt Basotho farmers? South Africa’s mineral revolution
+
+Johan, please advise on a title and source here?
+
+```{r}
+abel_data <- read_excel("data/abel_data.xlsx")
+
+jpeg(
+    filename="graphs_3/17.1_v3.jpeg",
+    width=8,
+    height=6,
+    units="in",
+    res=1000)
+
+abel_data %>%
+  ggplot(aes(x, y, lty = series)) +
+  geom_line(size = 1.3) +
+  scale_y_continuous(labels = scales::percent_format(scale = 1)) +
+  labs(x = NULL,
+       y = "Debt to GDP ratio",
+       lty = "",
+       caption = "Source: Gwaindepi and Fourie (2020)") 
+
+dev.off()
+
+```
+
+# Chapter 18: What did Sol Plaatje find on his journey through South Africa? Property rights and labour coercion
+
+```{r}
+height_ci <- read_excel("data/confidence_interval_black_heights.xlsx")
+
+height_ci <- height_ci %>% 
+  mutate(year_floor = round(year, 0)) %>% 
+  group_by(year_floor) %>% 
+  mutate(max_height = max(height),
+         min_height = min(height)) %>% 
+  ungroup()
+
+# height_ci %>% 
+#   ggplot() +
+#   geom_line(aes(year_floor, max_height)) +
+#   geom_line(aes(year_floor, min_height))
+```
+
+
+### Testing new way to do things
+
+```{r}
+
+height_mid <- read_excel("data/black_heights_new_2.xlsx")
+
+
+jpeg(
+    filename="graphs_3/18.1_v5.jpeg",
+    width=8,
+    height=6,
+    units="in",
+    res=1000)
+
+ggplot() +
+  geom_line(data = height_mid, aes(year, height, colour = ""), cex = 1) +
+  geom_ribbon(data = height_ci, aes(x = year_floor, ymin = min_height, ymax = max_height), alpha = .1) +
+  geom_smooth(data = height_mid, aes(x = year, y = height, fill = "Conditional mean and 95% confidence interval"), 
+              alpha = 0, colour = NA, show.legend = F) +
+  geom_vline(xintercept = c(1931, 1949), lty = 2) +
+  # theme_light() +
+  scale_color_manual(values = "black") +
+  theme(
+    # panel.grid.major.x = element_blank(),
+        # panel.grid.minor.x = element_blank(),
+        legend.position = "bottom") +
+  labs(x = NULL,
+       y = "Height (in cm)",
+       colour = "Conditional mean of black male heights and 95% confidence interval",
+       caption = "Source: Mpeta, Fourie and Inwood (2018)")
+
+dev.off()
+
+```
+
+
+
+
+
+
+
+```{r}
+black_heights <- read_excel("data/black_heights_new.xlsx")
+
+
+
+jpeg(
+    filename="graphs_3/18.1_v3.jpeg",
+    width=8,
+    height=6,
+    units="in",
+    res=1000)
+
+black_heights %>% 
+  # filter(between(Year, 1900, 1980)) %>% 
+         # Age >= 20) %>% 
+  ggplot(aes(Year, Height)) +
+  geom_smooth(
+    method = "loess", 
+    aes(fill = "Conditional mean and 95% confidence interval"), level = 0.95, col = 1) +
+  geom_vline(xintercept = c(1931, 1949), lty = 2) +
+  scale_x_continuous(breaks = seq(1900, 1980, by = 10)) +
+  scale_fill_manual(values = "#B2B2B2") +
+  theme_light() +
+  theme(
+    # panel.grid.major.x = element_blank(),
+        # panel.grid.minor.x = element_blank(),
+        legend.position = "bottom") +
+  labs(x = "Year",
+       y = "Height (in cm)",
+       fill = "Black male heights",
+       caption = "Source: Mpeta, Fourie and Inwood (2017)")
+
+dev.off()
+
+```
+
+
+# Chapter 21:What was new about the New Deal? The Great Depression and the New Deal
+
+
+From caption: Difference from 1929 in Real GDP, Federal Government Outlays, Revenues, Surplus/deficit as a percentage of 1929 Real GDP.
+
+Source?? y-axis label??
+
+```{r}
+US_gdp_fed_outlays_revenues <- read_excel("data/US-gdp-fed-outlays-revenues.xlsx")
+
+jpeg(
+    filename="graphs_3/21.1_v4.jpeg",
+    width=8,
+    height=6,
+    units="in",
+    res=1000)
+
+US_gdp_fed_outlays_revenues %>% 
+  ggplot(aes(x1, y, lty = series, colour = series)) +
+  geom_line(size = 1.4) +
+  geom_hline(yintercept = 0, lty = 2) +
+  scale_color_grey() + 
+  guides(colour = guide_legend(nrow = 2)) +
+  labs(x = NULL,
+       y = "Series as a percentage of 1929 real GDP",
+       # title = "Real GDP, Federal Government Outlays, Revenues, Surplus/deficit",
+       # subtitle = "As a percentage of 1929 Real GDP",
+       lty = "",
+       colour = "",
+       caption = "Source: Federal Reserve Bank of St. Louis (2018)")
+
+dev.off()
+
+```
+
+
+# Chapter 22: How could a movie embarrass Stalin? Russia and the turn to communism
+## Graph comparing USA and USSR growth
+
+
+```{r}
+df_mad_usa_fussr <- df_mad %>% 
+  filter(country_name %in% c("United States", "Former USSR"),
+         indicator_code == "cgdppc",
+         between(year, 1885, 2020))
+```
+
+Graph comparing USA and USSR growth: colours
+
+```{r}
+df_mad_usa_fussr %>% 
+  ggplot() +
+  geom_line(aes(year, stat, colour = country_name), cex = 1) +
+  # geom_text(data = df_mad_usa_fussr %>%
+  #             filter(country_name %in% c("United States", "Former USSR"),
+  #             indicator_code == "cgdppc",
+  #        year == max(year)),
+  #   aes(year, stat, label = country_name, hjust = -.1)) +
+  scale_y_continuous(labels = scales::comma_format(big.mark = " ")) + 
+  scale_color_brewer(palette = "Dark2") +
+  labs(y = "GDP per capita (constant 2010 US$)", 
+       x = "Year",
+       # title = "GDP per capita growth 1885-1995",
+       caption = "Source: Maddison Project Database (2018)",
+       colour = "") +
+  theme(legend.position = "bottom")
+
+```
+
+Graph comparing USA and USSR growth: dotted line and in pane labels
+
+```{r}
+df_mad_usa_fussr %>% 
+  ggplot() +
+  geom_line(aes(year, stat, lty = country_name), cex = 1) +
+  geom_text(data = df_mad_usa_fussr %>%
+              filter(country_name %in% c("United States", "Former USSR"),
+              indicator_code == "cgdppc",
+         year == max(year)),
+    aes(year, stat, label = country_name, hjust = 1, vjust = -.1)) +
+  scale_y_continuous(labels = scales::comma_format(big.mark = " ")) + 
+  expand_limits(x = 2025) +
+  labs(y = "GDP per capita (constant 2010 US$)", 
+       x = "Year",
+       # title = "GDP per capita growth 1885-1995",
+       caption = "Source: Maddison Project Database (2018)") +
+  theme(legend.position = "none")
+
+```
+
+Graph comparing USA and USSR growth: Grey lines
+
+```{r}
+# colour brewer greys
+
+jpeg(
+    filename="graphs_3/22.1_v3.jpeg",
+    width=8,
+    height=6,
+    units="in",
+    res=1000)
+
+df_mad_usa_fussr %>%
+  ggplot() +
+  geom_line(aes(year, stat, colour = country_name, lty = country_name), size = 1.4) +
+  geom_text(
+    data = df_mad_usa_fussr %>%
+      filter(
+        country_name %in% c("United States", "Former USSR"),
+        indicator_code == "cgdppc",
+        year == max(year)
+      ),
+    aes(year, stat, label = country_name, hjust = 1, vjust = -.5),
+    size = 5
+  ) +
+  scale_y_continuous(labels = scales::comma_format(big.mark = " ")) +
+  scale_color_grey(end = .5) +
+  expand_limits(x = 2015) +
+  labs(
+    y = "GDP per capita (constant 2010 US$)",
+    x = NULL,
+    # title = "GDP per capita growth 1885-1995",
+    caption = "Source: Maddison Project Database (2018)"
+  ) +
+  theme(legend.position = "none")
+
+dev.off()
+
+```
+
+Graph comparing USA and USSR growth: Dotted grey lines and legend
+
+```{r}
+df_mad_usa_fussr %>% 
+  ggplot() +
+  geom_line(aes(year, stat, colour = country_name, lty = country_name), cex = 1) +
+  # geom_text(data = df_mad_usa_fussr %>%
+  #             filter(country_name %in% c("United States", "Former USSR"),
+  #             indicator_code == "cgdppc",
+  #        year == max(year)),
+  #   aes(year, stat, label = country_name, hjust = -.1)) +
+  scale_y_continuous(labels = scales::comma_format(big.mark = " ")) + 
+  scale_color_grey(end = .5) +
+  labs(y = "GDP per capita (constant 2010 US$)", 
+       x = "Year",
+       # title = "GDP per capita growth 1885-1995",
+       caption = "Source: Maddison Project Database (2018)",
+       lty = "",
+       colour = "") +
+  theme(legend.position = "bottom")
+
+```
+
+
+### Life expectancy end of communism
+
+```{r}
+df_le <- read_excel("data/life-expectancy-communism-our world in data.xlsx") %>% janitor::clean_names()
+
+df_le_filter <- df_le %>% 
+  filter(between(year, 1960,2020))
+
+df_le_filter <- df_le_filter %>% 
+  filter(entity %in% c("Czech Republic", "Poland", "Slovakia", "Hungary", "Romania", "Bulgaria")) 
+
+df_le_filter_labs <- df_le_filter %>% 
+  group_by(entity) %>% 
+  filter(year == max(year)) %>% 
+  ungroup()
+```
+
+
+```{r}
+
+jpeg(
+    filename="graphs_3/22.2_v2.jpeg",
+    width=8,
+    height=6,
+    units="in",
+    res=1000)
+
+df_le_filter %>% 
+  ggplot(aes(year, life_expectancy, colour = entity, lty = entity)) +
+  geom_text(data = df_le_filter_labs, aes(year, life_expectancy, label = entity), hjust = .001, colour = "black") +
+  geom_line(size = 1.4) +
+  geom_vline(xintercept = 1990, lty = 2) +
+  theme(legend.position = "none") +
+  scale_color_grey() +
+  scale_y_continuous(labels = scales::unit_format(suffix = " years", accuracy = 1)) +
+  scale_x_continuous(limits = c(1960, 2029)) +
+  labs(x = NULL,
+       y = "Life expectancy at birth",
+       caption = "Note: Dotted line indicates the fall of communism\nSource: Our World in Data")
+
+dev.off()
+```
+
+
+# Chapter 23: What was the Great Leap Forward? Mao Zedong, famine and the Cultural Revolution
+
+The national inventory of draft animals and quantity of cowhides sold nationwide
+
+```{r}
+
+df_glf <- read.csv("data/animals_cowhides.csv") %>% as_tibble() %>% mutate(panel = factor(panel))
+# 
+# df_glf %>% 
+#   ggplot(aes(year, stat, shape = panel)) +
+#   geom_point() +
+#   geom_line() +
+#   geom_vline(xintercept = 1954, lty = 2) +
+#   facet_wrap(~ panel, scales = "free_y", nrow = 2,
+#               strip.position = "left", 
+#               labeller = as_labeller(c(a = "Inventory of Draft Animals (million)", b = "Quantity of Cowhides Sold (million)") ) )  +
+#      ylab(NULL) +
+#      # theme(strip.background = element_blank(),
+#            theme(strip.placement = "outside") +
+#   theme(legend.position = "none") +
+#   xlab("Year") +
+#   labs(title = "Change in inventory of draft animals and quantity of cowhides sold 1925-1957")
+# 
+
+
+```
+
+```{r}
+
+library(ggpubr)
+
+df_glf_a <- df_glf %>% 
+  filter(panel == "a")
+
+a <- df_glf_a %>%
+  ggplot(aes(year, stat, shape = panel)) +
+  geom_point() +
+  geom_line() +
+  geom_vline(xintercept = 1954, lty = 2) +
+  scale_y_continuous(labels = scales::number_format(suffix = "m", accuracy = 1)) +
+  labs( # title = "Change in inventory of draft animals",
+    x = NULL,
+    y = "Inventory of draught animals"
+  ) +
+  theme(legend.position = "none")
+
+df_glf_b <- df_glf %>% 
+  filter(panel == "b")
+
+b <- df_glf_b %>%
+  ggplot(aes(year, stat, shape = panel)) +
+  geom_point() +
+  geom_line() +
+  geom_vline(xintercept = 1954, lty = 2) +
+  scale_y_continuous(labels = scales::number_format(suffix = "m", accuracy = 1)) +
+  labs( # title = "Change in cowhides sold",
+    x = NULL,
+    y = "Quantity of cowhides sold",
+    caption = "Source: Chen and Lan (2017)"
+  ) +
+  theme(legend.position = "none")
+
+jpeg(
+    filename="graphs_3/23.1_v3.jpeg",
+    width=8,
+    height=6,
+    units="in",
+    res=1000)
+
+ggarrange(a, b, ncol = 1, nrow = 2)
+
+dev.off()
+
+```
+
+# Chapter 24: Why should we cry for Argentina? A country reverses 
+
+GDP per capita in 1900 vs GDP per capita in 2000
+
+```{r}
+df_mad_1900 <- df_mad %>%
+  filter(between(year, 1890, 1910)) %>% 
+  group_by(country_name) %>% 
+  filter(year == median(year)) %>% 
+  ungroup() %>% 
+  mutate(time = 1900)
+
+df_mad_2000 <- df_mad %>%
+  filter(between(year, 1990, 2010)) %>% 
+  group_by(country_name) %>% 
+  filter(year == median(year)) %>% 
+  ungroup() %>% 
+  mutate(time = 2000)
+
+df_mad_comp <- rbind(df_mad_2000, df_mad_1900) %>% arrange(country_name, time)
+
+df_mad_comp <- df_mad_comp %>% 
+  select(!year) %>% 
+  pivot_wider(names_from = time, values_from = stat)
+
+library(countrycode)
+
+df_mad_comp <- df_mad_comp %>% 
+  mutate(continent = countrycode(country_code, origin = "iso3c", destination = "continent"))
+
+df_mad_comp <- df_mad_comp %>% 
+  mutate(country_name = str_remove(country_name, "\\(.*"))
+```
+
+Argentina highlighted on evolution of GDP: Greyscale
+
+```{r}
+
+jpeg(
+    filename="graphs_3/24.1_v3.jpeg",
+    width=8,
+    height=6,
+    units="in",
+    res=1000)
+
+df_mad_comp %>% 
+  filter(indicator_code == "cgdppc",
+         continent != "NA",
+         country_code != "ARG") %>% 
+  ggplot(aes(`1900`, `2000`, label = country_name, shape = continent), cex = 2.5) +
+  geom_point(cex = 2.5) +
+  geom_text_repel() +
+  geom_label_repel(data = df_mad_comp %>% 
+                     filter(indicator_code == "cgdppc",
+                            continent != "NA",
+                            country_code == "ARG"),
+                   aes(`1900`, `2000`, label = country_name, shape = continent)) +
+  # geom_abline() +
+  scale_shape_manual(values = seq(15,20, by = 1)) +
+  scale_x_continuous(labels = scales::dollar_format(big.mark = " ")) +
+  scale_y_continuous(labels = scales::dollar_format(big.mark = " "), limits = c(0,60000)) +
+  labs(x = "GDP per capita in 1900",
+       y = "GDP per capita in 2000",
+       shape = "Continent",
+       caption = "Source: Maddison Project Database (2018)") +
+  theme(legend.position = "bottom")
+
+dev.off()
+
+```
+
+Argentina highlighted on evolution of GDP: Colours
+
+```{r}
+df_mad_comp %>% 
+  filter(indicator_code == "cgdppc",
+         continent != "NA",
+         country_code != "ARG") %>% 
+  ggplot(aes(`1900`, `2000`, label = country_name, shape = continent, colour = continent), cex = 2.5) +
+  geom_point(cex = 2.5) +
+  geom_text_repel() +
+  geom_label_repel(data = df_mad_comp %>% 
+                     filter(indicator_code == "cgdppc",
+                            continent != "NA",
+                            country_code == "ARG"),
+                   aes(`1900`, `2000`, label = country_name, shape = continent, colour = continent),
+                   show.legend = F) +
+  geom_abline() +
+  scale_shape_manual(values = seq(15,20, by = 1)) +
+  scale_x_log10(labels = scales::unit_format(suffix = "")) +
+  scale_y_log10(labels = scales::unit_format(suffix = "")) +
+  labs(x = "GDP per capita in 1900",
+       y = "GDP per capita in 2000",
+       shape = "Continent",
+       caption = "Source: Maddison Project Database (2018)",
+       colour = "Continent") 
+ 
+```
+
+
+
+# Chapter 25: Who was the last king of Scotland? African independence struggles
+
+Welfare ratio in Accra and Freetown in Global Persepctive 1870-1965
+
+```{r}
+
+Frankema <- read_csv("data/Frankema.csv")
+
+jpeg(
+    filename="graphs_3/25.1_v3.jpeg",
+    width=8,
+    height=6,
+    units="in",
+    res=1000)
+
+Frankema %>% 
+  filter(x < 1960) %>% 
+  ggplot(aes(x, y, colour = city, shape = city)) +
+  geom_point() +
+  scale_color_grey(start = .8, end = .2) +
+  geom_line() +
+  theme(legend.title = element_blank()) +
+  labs(x = NULL,
+       y = "Welfare ratio",
+       caption = "Source: Frankema and Van Waijenburg (2012)")
+
+dev.off()
+
+```
+
+Colour
+
+```{r}
+
+Frankema %>% 
+  filter(x < 1960) %>% 
+  ggplot(aes(x, y, colour = city, shape = city)) +
+  geom_point() +
+  geom_line() +
+  theme(legend.title = element_blank()) +
+  scale_color_brewer(palette = "Dark2") +
+  labs(x = "Year",
+       y = "Welfare Ratio",
+       caption = "Source: Frankema and Van Waijenburg (2012)")
+
+```
+
+
+# Chapter 27: Why would you want to eat sushi in the Transkei? The economics of apartheid
+
+```{r}
+p_load(sf)
+
+homelands <- st_read("data/Former homelands.shp")
+
+provinces <- st_read("data/gadm36_ZAF_1.shp")
+
+
+world <- ne_countries(scale = "medium", returnclass = "sf")
+
+# ne_states(country = "south africa", returnclass = "sf")
+
+regional_cities <- c("cape town, south africa",
+                    "port elizabeth, south africa",
+                    "pretoria, south africa",
+                    "johannesburg, south africa",
+                    "east london, south africa",
+                    "mthatha, south africa",
+                    "durban, south africa",
+                    "bloemfontein, south africa",
+                    "kimberley, south africa",
+                    "rustenburg, south africa",
+                    "polokwane, south africa") %>% as_tibble()
+
+
+
+# regional_cities_coords <- regional_cities %>% geocode(address = value, method = "osm", lat = lat, long = long)
+# write.csv(regional_cities_coords, file = "data/regional_cities_coords.csv")
+
+regional_cities_coords <- read.csv("data/regional_cities_coords.csv")
+
+coords_df <- regional_cities_coords %>% 
+  mutate(Y = lat, X = long, type = "Regional city", size = "a") %>% 
+  select(X, Y, type, size)
+
+ridp_points <- read.csv("data/ridp.csv") %>% as_tibble()
+
+
+ridp_points <- ridp_points %>% 
+  mutate(type = "Regional Industrial Development Zones",
+         size = "b") %>% 
+  select(!point)
+
+coords_df_combined <- rbind(coords_df, ridp_points) %>% as_tibble()
+
+```
+
+
+```{r}
+
+jpeg(
+    filename="graphs_3/27.1_v2.jpeg",
+    width=8,
+    height=6,
+    units="in",
+    res=1000)
+
+ggplot() +
+  # geom_sf(data = world, fill = "white") +
+  geom_sf(data = provinces, fill = "white") +
+  geom_sf(data = homelands, aes(fill = "#ebecf0")) +
+  geom_point(data = coords_df_combined, aes(X, Y, colour = type, shape = type, size = size)) +  
+    # geom_point(data = ridp_points, aes(X, Y, colour = "black"), shape = 19) +
+    # geom_point(data = regional_cities_coords, aes(x = long, y = lat, colour = "red"), cex = 3, shape = 17) +
+    coord_sf(ylim=c(-35,-22), xlim = c(15,35)) +
+  scale_fill_identity(name = '', guide = 'legend',labels = c('Homelands')) +
+    # scale_colour_manual(name = '', 
+    #      values =c('black'='black','red'='red'), labels = c('Regional Industrial Development Zones','Regional city')) +
+  scale_shape_manual(values = c(17,19), name = "") +
+  scale_color_manual(values = c("black", "#555555"), name = "") +
+  scale_size_manual(values = c(4, 2), guide = 'none') +
+  theme_void() +
+  theme(legend.position = "bottom",
+        panel.grid = element_blank()) +
+  labs(caption = "Source: Kerby (2016)",
+       x= "",
+       y = "") 
+
+dev.off()
+
+```
+
+
+# Chapter 28: Why do the Japanese play rugby? The rise of the East Asian economies
+
+Knowledge capital accounts for apparent growth mysteries in East Asia and Latin America
+B&W
+
+```{r}
+
+schooling_test_scores <- read_excel("data/schooling_test_scores_1.xlsx")
+
+s1 <- schooling_test_scores %>%
+  filter(panel == "a") %>% 
+  ggplot(aes(x, y, shape = colour, alpha = colour, group = 1)) +
+  geom_point() +
+  geom_smooth(method ="lm", se = F, colour = "grey70") +
+  geom_text_repel(data = schooling_test_scores %>% filter(country != "grey", panel == "a"), aes(x,y, label = country)) +
+  # geom_text(data = schooling_test_scores %>% filter(country != "grey", panel == "a"), aes(x,y, label = country), check_overlap = T) +
+  scale_alpha_ordinal(range = c(0.4, 1)) +
+  scale_y_continuous(labels = scales::percent_format(scale = 1), limits = c(-.2, 6.5)) +
+  theme(legend.position = "none") +
+  labs(y = "Growth rate",
+       x = "Years of schooling",
+       caption = " ")
+
+s2 <- schooling_test_scores %>%
+  filter(panel == "b") %>% 
+  ggplot(aes(x, y, shape = colour, alpha = colour, group = 1)) +
+  geom_point() +
+  geom_smooth(method ="lm", se = F, colour = "grey70") +
+  geom_text_repel(data = schooling_test_scores %>% filter(country != "grey", panel == "b"), aes(x,y, label = country)) +
+  # geom_text(data = schooling_test_scores %>% filter(country != "grey", panel == "b"), aes(x,y, label = country), check_overlap = T) +
+  scale_alpha_ordinal(range = c(0.4, 1)) +
+  scale_y_continuous(labels = scales::percent_format(scale = 1), limits = c(-.2, 6.5)) +
+  scale_x_continuous(limits = c(-.5, 3)) +
+  theme(legend.position = "none") +
+  labs(y = "Growth rate",
+       x = "Test score",
+       caption = "Source: Hanushek and Woessmann (2016)")
+
+s3 <- ggarrange(s1, s2, ncol = 2, nrow = 1) 
+
+# annotate_figure(s3)
+                
+                #top = "Knowledge capital accounts for apparent growth mysteries in East Asia and Latin America"
+jpeg(
+    filename="graphs_3/28.1_v7.jpeg",
+    width=9,
+    height=7,
+    units="in",
+    res=1000)
+
+s3
+
+dev.off()
+```
+
+Colour
+
+```{r}
+
+
+s4 <- schooling_test_scores %>%
+  filter(panel == "a") %>% 
+  ggplot(aes(x, y, colour = colour, shape = colour, group = 1)) +
+  geom_point() +
+  geom_smooth(method ="lm", se = F, colour = "grey70") +
+  geom_text_repel(data = schooling_test_scores %>% filter(country != "grey", panel == "a"), aes(x,y, label = country)) +
+  scale_color_brewer(palette = "Dark2") +
+  scale_y_continuous(labels = scales::percent_format(scale = 1)) +
+  theme(legend.position = "none") +
+  labs(y = "Growth rate",
+       x = "Years of schooling",
+       caption = " ")
+
+s5 <- schooling_test_scores %>%
+  filter(panel == "b") %>% 
+  ggplot(aes(x, y, colour = colour, shape = colour, group = 1)) +
+  geom_point() +
+  geom_smooth(method ="lm", se = F, colour = "grey70") +
+  geom_text_repel(data = schooling_test_scores %>% filter(country != "grey", panel == "b"), aes(x,y, label = country)) +
+  scale_color_brewer(palette = "Dark2") +
+  scale_y_continuous(labels = scales::percent_format(scale = 1)) +
+  theme(legend.position = "none") +
+  labs(y = "Growth rate",
+       x = "Test Score",
+       caption = "Source: Hanushek and Woessmann (2016)")
+
+s6 <- ggarrange(s4, s5, ncol = 2, nrow = 1) 
+
+annotate_figure(s6)
+
+ # top = "Knowledge capital accounts for apparent growth mysteries in East Asia and Latin America")
+
+```
+
+# Chapter 29: What do Lego and the greatest invention of the twentieth century have in commons? The second era of globalization
+### The value of global exports
+
+```{r}
+
+world_trade_exports_constant_prices <- read_csv("data/world-trade-exports-constant-prices.csv")
+
+jpeg(
+    filename="graphs_3/29.1_v4.jpeg",
+    width=8,
+    height=6,
+    units="in",
+    res=1000)
+
+world_trade_exports_constant_prices %>% 
+  ggplot(aes(Year, `World Trade`)) +
+  geom_line(size = 1.4) +
+  scale_y_continuous(labels = scales::comma_format(big.mark = " ")) + 
+  scale_color_grey(end = .5) +
+  labs(y = "Volume of global exports (indexed with 1913 = 100)", 
+       x = NULL,
+       # title = "GDP per capita growth 1885-1995",
+       # subtitle = "Time series of value of world exports at constant prices, relative to 1913",
+       caption = "Source: Federico and Tena-Junguito (2016)",
+       lty = "",
+       colour = "") +
+  theme(legend.position = "bottom")
+
+dev.off()
+
+```
+
+# Chapter 30: What is funny about Moore's law? ICT and the Fourth Industrial Revolution
+# Transistor count
+
+```{r}
+df_transistors <- read_rds("data/df_transistors.rds")
+
+df_transistors %>% 
+  count(designer, sort = T)
+
+df_transistors <- df_transistors %>% 
+  mutate(designer = fct_lump(designer, 5))
+
+processor_labels <- sample(df_transistors$processor, 15)
+
+title <- "Moore's Law - The number of transistors on integrated circuit chips (1971-2020)"
+
+subtitle <- "Moore's law describes the empirical regularity that the number of transistors on integrated circuits \ndoubles approximately every two years. This adVancement is important as other aspects of \ntechnogical progress - such as processing speed or the price of electronic products - are linked to Moore's law"
+
+df_transistors %>% 
+  ggplot(aes(date_ofintroduction, mos_transistor_count)) +
+  geom_point(aes(colour = designer, shape = designer), cex = 2.5) +
+  geom_text_repel(data = df_transistors %>% 
+                    filter(processor %in% processor_labels), 
+                  aes(date_ofintroduction, mos_transistor_count, label = processor),
+                  cex = 3) +
+  scale_shape_manual(values = seq(15,20, by = 1)) +
+  scale_color_grey(start = .9, end = .1) +
+  scale_y_log10(labels = scales::comma_format(big.mark = " ")) +
+  labs(x = "Year",
+       y = "Transistor Count (log scale)",
+       shape = "Chip Designer",
+       colour = "Chip Designer",
+       caption = "Source: Wikipedia - 'Transistor Count'",
+       title = title,
+       subtitle = subtitle)
+  
+```
+
+Moore's Law:
+Without title and explanation
+
+```{r}
+
+jpeg(
+    filename="graphs_3/30.1_v5.jpeg",
+    width=8,
+    height=6,
+    units="in",
+    res=1000)
+
+df_transistors %>% 
+  ggplot(aes(date_ofintroduction, mos_transistor_count)) +
+  # geom_smooth(method = "lm", se = F) +
+  geom_point(aes(colour = designer, shape = designer), cex = 2.5) +
+  geom_text_repel(data = df_transistors %>% 
+                    filter(processor %in% processor_labels), 
+                  aes(date_ofintroduction, mos_transistor_count, label = processor),
+                  cex = 4) +
+  scale_shape_manual(values = seq(15,20, by = 1)) +
+  scale_color_grey(start = .9, end = .1) +
+  scale_y_log10(labels = scales::comma_format(big.mark = " ")) +
+  labs(x = NULL,
+       y = "Transistor count on integrated circuit chips (log scale)",
+       shape = "Chip designer",
+       colour = "Chip designer",
+       caption = "Source: Wikipedia - 'Transistor Count'")
+
+dev.off()
+```
+
+
+### Chapter 32: What did The Economist get spectacularly wrong? Africa after 2000
+
+Share of countries with any bad policy
+
+Source??
+
+```{r}
+any_bad_policy <- read_excel("data/any_bad_policy.xlsx")
+
+any_bad_policy_labels <- any_bad_policy %>% 
+  group_by(country) %>% 
+  filter(x == min(x))
+
+jpeg(
+    filename="graphs_3/32.1_v4.jpeg",
+    width=8,
+    height=6,
+    units="in",
+    res=1000)
+
+any_bad_policy %>% 
+  ggplot(aes(x, y, alpha = country, lty = country)) +
+  geom_line(size = 1.3) +
+  # geom_text_repel(data = any_bad_policy_labels, aes(x, y, label = country), vjust = -.1, show.legend = FALSE) +
+  scale_x_continuous(breaks = seq(1960, 2015, by = 10)) +
+  scale_y_continuous(labels = scales::percent_format()) +
+  scale_alpha_discrete(range = c(.3, .9)) +
+  theme(legend.position = "bottom") +
+  labs(#title = "Share of countries with any bad policy",
+       lty = "Region",
+       alpha = "Region",
+       y= "Share of countries with any bad policy",
+       caption = "Source: Weisbrot and Ray (2016)",
+       x = NULL)
+
+dev.off()
+
+```
+
+Share of deaths from HIV/AIDS, 2000
+
+```{r}
+
+share_deaths_aids <- read_csv("data/share-deaths-aids.csv") %>% as_tibble()
+
+share_deaths_aids <- share_deaths_aids %>% 
+  rename(share_death = `Deaths - HIV/AIDS - Sex: Both - Age: All Ages (Percent)`) %>% 
+  filter(Year == 2000,
+         !is.na(Code))
+
+share_deaths_aids <- share_deaths_aids %>% 
+  mutate(country_code = countrycode::countrycode(share_deaths_aids$Entity, origin = "country.name", destination = "iso3c"),
+         iso_a3 = country_code)
+
+library("rnaturalearth")
+library("rnaturalearthdata")
+p_load(ggthemes)
+
+world <- ne_countries(scale = "medium", returnclass = "sf")
+
+df_sf <- inner_join(share_deaths_aids, world, by = "iso_a3")
+
+jpeg(
+    filename="graphs_3/32.2_v4.jpeg",
+    width=8,
+    height=6,
+    units="in",
+    res=1000)
+
+ggplot(data = df_sf) +
+  borders() +
+  geom_sf(aes(fill = share_death, geometry = geometry)) +
+  # scale_fill_viridis_c(trans = "sqrt") +
+  scale_fill_gradient(low = "gray97", high = "gray10", labels = scales::percent_format(scale = 1), breaks = seq(0,60, by = 10)) +
+  theme(legend.position = "bottom") +
+  coord_sf(ylim = c(-50, 70),
+           xlim = c(-120, 150)) +
+  guides(fill = guide_colorbar(barwidth = 20, barheight = 0.5, title.position = "top", title.hjust = .5)) +
+  labs(#title = "Share of deaths from HIV/AIDS - 2000",
+       caption = "Source: IMHE, Global Burden of Disease",
+       x = NULL,
+       y = NULL,
+       fill = "Share of deaths from HIV/AIDS - 2000")
+
+dev.off()
+
+```
+
+# Geological regions map
+
+```{r}
+p_load(sf)
+
+library("rnaturalearth")
+# library("rnaturalearthdata")
+p_load(ggthemes)
+
+world <- ne_countries(scale = "medium", returnclass = "sf")
+
+africa <- ne_countries(continent = "africa", scale = "small", returnclass = "sf")
+
+georegions <- st_read("data/africa_agroecological_zoning.shp")
+
+georegions <- georegions %>% 
+  mutate(AEZ_group = str_extract(AEZ_NAME, "/.*"),
+         AEZ_group = str_remove(AEZ_group, "/"),
+         AEZ_group = str_to_title(AEZ_group),
+         AEZ_group = str_squish(AEZ_group))
+
+
+# georegions <- georegions %>%
+#   mutate(AEZ_group = recode(AEZ_group,
+#                             Arid = "Desert",
+#                             Humid = "Forest",
+#                             Subhumid = "Savannah",
+#                             Semiarid = "Temperate zones"))
+
+
+georegions_2 <- georegions %>%
+  mutate(AEZ_group = recode(AEZ_group,
+                            Arid = "Desert",
+                            Humid = "Forest",
+                            Subhumid = "Savannah",
+                            Semiarid = "Savannah"))
+
+
+# st_write(georegions_2, "data/georegions_shapefile_out_2.shp", driver="ESRI Shapefile")
+
+# editing in qgis to get just temperate zones at the med and cape
+
+georegions_3 <- st_read("data/georegions_shapefile_out_3.shp")
+
+georegions_3 <- georegions_3 %>% 
+  filter( AEZ_group  %in% c("Temperate zones", "Savannah"))
+
+# georegions %>% 
+#   count(AEZ_group, sort = T)
+
+
+# ggplot(georegions) +
+#   geom_sf(aes(fill = AEZ_NAME)) +
+#   geom_sf_text(aes())
+
+
+```
+
+
+### Making the shapefile smaller
+
+looking at https://gis.stackexchange.com/questions/71094/reduce-the-resolution-of-a-shapefile-in-r-or-qgis-if-necessary 
+
+```{r}
+georegions_simplified <- georegions %>% 
+  st_simplify(dTolerance = 0.05)
+
+georegions_simplified_2 <- georegions_2 %>% 
+  st_simplify(dTolerance = 0.05)
+
+georegions_simplified_3 <- georegions_3 %>% 
+  st_simplify(dTolerance = 0.05)
+```
+
+### Highlands shapefile
+
+```{r}
+
+# highlands <- read_sf("data/highlands_export.shp")
+
+# highlands <- highlands %>% 
+#   mutate(AEZ_NAME = "A",
+#          ORIG_FID = 1,
+#          )
+
+# ggplot() +
+#   geom_sf(data = africa) +
+#   geom_sf(data = georegions_simplified, aes(fill = AEZ_group), alpha = .5, colour = NA) +
+#   # scale_fill_brewer(palette = "Greys") +
+#   scale_fill_manual(values = c("#CCCCCC", "#999999", "#666666", "#333333")) +
+#   # theme_void() +
+#   theme(legend.position = "bottom") 
+#   labs(fill = "Ecological region",
+#        caption = "Source: Regional Centre for Mapping of Resources for Development (2018)") 
+
+
+```
+
+
+### Highlands shapefile 2
+
+```{r}
+
+highlands <- read_sf("data/highlands_6_exp.shp")
+
+
+
+jpeg(
+    filename="graphs_3/Africa_Map.1_v6.jpeg",
+    width=8,
+    height=6,
+    units="in",
+    res=1000)
+
+
+ggplot() +
+  geom_sf(data = africa) +
+  geom_sf(data = georegions_simplified_2, aes(fill = AEZ_group), alpha = .5, colour = NA) +
+  geom_sf(data = georegions_simplified_3, aes(fill = "Temperate zones"), alpha = .5, colour = NA) +
+  geom_sf(data = highlands, aes(fill = "Highlands"), alpha = .8, colour = NA) +
+  # scale_fill_brewer(palette = "Greys") +
+  scale_fill_manual(values = c("#F5F5F5", "#333333", "black", "#666666", "#CCCCCC")) +
+  theme_map() +
+  # theme(legend.position = "bottom") +
+  labs(fill = "Ecological region",
+       caption = "Source: Regional Centre for Mapping of Resources for Development (2018)") 
+
+
+dev.off()
+
+
+```
+
+
+
+### With theme map
+
+```{r}
+
+jpeg(
+    filename="graphs_3/Africa_Map.1_v4.jpeg",
+    width=8,
+    height=6,
+    units="in",
+    res=1000)
+
+ggplot() +
+  geom_sf(data = africa) +
+  geom_sf(data = georegions_simplified, aes(fill = AEZ_group), alpha = .5, colour = NA) +
+  geom_sf(data = highlands, aes(fill = "Highlands"), alpha = .6, colour = NA) +
+  # scale_fill_brewer(palette = "Greys") +
+  scale_fill_manual(values = c("#CCCCCC", "#999999", "black", "#666666", "#333333")) +
+  theme_map() +
+  # theme(legend.position = "bottom") +
+  labs(fill = "Ecological region",
+       caption = "Source: Regional Centre for Mapping of Resources for Development (2018)") 
+
+dev.off()
+
+```
+
+### With theme sf
+
+```{r}
+
+jpeg(
+    filename="graphs_3/Africa_Map.1_v3.jpeg",
+    width=8,
+    height=6,
+    units="in",
+    res=1000)
+
+ggplot() +
+  geom_sf(data = africa) +
+  geom_sf(data = georegions_simplified, aes(fill = AEZ_group), alpha = .5, colour = NA) +
+  # scale_fill_brewer(palette = "Greys") +
+  scale_fill_manual(values = c("#CCCCCC", "#999999", "#666666", "#333333")) +
+  labs(fill = "Ecological region",
+       caption = "Source: Regional Centre for Mapping of Resources for Development (2018)") 
+
+
+dev.off()
+```
+
+
+
+```{r}
+p_load(raster)
+
+tif <- raster("data/Africa_Terrestrial_Ecosystems.tif")
+
+plot(tif, breaks = c(0,1,160,), col = terrain.colors(4))
+
+
+
+```
+

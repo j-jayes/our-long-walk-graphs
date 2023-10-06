@@ -1,0 +1,374 @@
+city,x,y
+London,1870,5.08
+London,1872,4.9
+London,1873,5.28
+London,1874,5.89
+London,1875,6.25
+London,1876,6.38
+London,1877,6.35
+London,1878,6.37
+London,1879,6.61
+London,1880,7.01
+London,1881,6.83
+London,1882,6.94
+London,1883,6.93
+London,1884,7.32
+London,1885,7.62
+London,1886,7.95
+London,1887,8.03
+London,1888,7.8
+London,1889,8.26
+London,1890,8.18
+London,1891,8.13
+London,1892,8.05
+London,1893,8.01
+London,1894,8.21
+London,1895,8.9
+London,1896,9.05
+London,1898,9.07
+London,1899,8.85
+London,1900,8.67
+London,1901,8.79
+London,1902,8.37
+London,1903,8.41
+London,1904,8.41
+London,1905,8.29
+London,1906,8.34
+London,1907,8.31
+London,1908,9.31
+London,1909,9.13
+London,1910,8.98
+London,1911,8.98
+London,1912,8.74
+London,1913,8.74
+London,1914,8.44
+London,1915,9.28
+London,1934,8.95
+London,1935,8.77
+Amsterdam,1870,1.23
+Amsterdam,1871,1.28
+Amsterdam,1873,1.44
+Amsterdam,1874,1.61
+Amsterdam,1875,1.56
+Amsterdam,1876,1.84
+Amsterdam,1877,1.81
+Amsterdam,1878,1.76
+Amsterdam,1879,1.99
+Amsterdam,1880,2.1
+Amsterdam,1881,2.1
+Amsterdam,1882,2.23
+Amsterdam,1883,2.35
+Amsterdam,1884,2.32
+Amsterdam,1885,2.4
+Amsterdam,1886,2.84
+Amsterdam,1887,3.07
+Amsterdam,1888,3.45
+Amsterdam,1889,3.39
+Amsterdam,1890,3.34
+Amsterdam,1891,2.84
+Amsterdam,1892,3.07
+Amsterdam,1893,3.21
+Amsterdam,1894,3.72
+Amsterdam,1895,4.28
+Amsterdam,1896,4.29
+Amsterdam,1898,4.41
+Amsterdam,1899,4.92
+Amsterdam,1900,4.88
+Amsterdam,1901,4.69
+Amsterdam,1902,4.09
+Amsterdam,1903,4.92
+Amsterdam,1904,4.82
+Amsterdam,1905,4.72
+Amsterdam,1906,4.8
+Amsterdam,1907,5.23
+Amsterdam,1908,5.36
+Amsterdam,1909,4.84
+Amsterdam,1910,5.08
+Amsterdam,1911,5.71
+Amsterdam,1912,5.84
+Accra,1881,0.75
+Accra,1882,0.74
+Accra,1883,0.74
+Accra,1884,0.95
+Accra,1885,0.93
+Accra,1886,0.92
+Accra,1887,0.93
+Accra,1888,0.95
+Accra,1889,1.03
+Accra,1890,1.03
+Accra,1891,1.03
+Accra,1892,1.38
+Accra,1893,1.13
+Accra,1895,1.2
+Accra,1896,1.64
+Accra,1896,1.31
+Accra,1898,1.31
+Accra,1899,1.31
+Accra,1900,1.31
+Accra,1901,1.31
+Accra,1902,1.31
+Accra,1903,1.28
+Accra,1904,1.28
+Accra,1905,1.28
+Accra,1906,1.63
+Accra,1907,1.64
+Accra,1908,1.63
+Accra,1909,1.59
+Accra,1910,1.58
+Accra,1911,1.49
+Accra,1912,1.48
+Accra,1913,1.46
+Accra,1923,0.64
+Accra,1923,1.13
+Accra,1925,1.41
+Accra,1926,1.92
+Accra,1927,1.92
+Accra,1928,1.92
+Accra,1929,1.92
+Accra,1930,2.38
+Accra,1931,1.31
+Accra,1932,3.01
+Accra,1933,2.91
+Accra,1934,3.77
+Accra,1935,2.78
+Accra,1936,2.61
+Accra,1937,2.7
+Accra,1938,2.56
+Accra,1939,4.03
+Accra,1940,2.53
+Accra,1941,2.63
+Accra,1943,2.63
+Accra,1943,2.38
+Accra,1944,1.43
+Accra,1945,2.76
+Accra,1947,2.51
+Accra,1948,2.32
+Accra,1949,2.12
+Accra,1952,3.45
+Accra,1953,2.78
+Accra,1955,1.79
+Accra,1956,4.16
+Accra,1957,4.16
+Accra,1958,4.23
+Accra,1959,3.77
+Accra,1960,3.55
+Accra,1961,3.96
+Accra,1962,3.75
+Accra,1963,4.79
+Accra,1964,5.16
+Beijing,1871,1.02
+Beijing,1872,1.04
+Beijing,1873,1.06
+Beijing,1873,1.11
+Beijing,1874,1.12
+Beijing,1875,1.13
+Beijing,1876,1.17
+Beijing,1877,1.22
+Beijing,1878,1.3
+Beijing,1879,1.49
+Beijing,1880,1.5
+Beijing,1881,1.5
+Beijing,1881,1.49
+Beijing,1882,1.48
+Beijing,1883,1.51
+Beijing,1884,1.53
+Beijing,1885,1.57
+Beijing,1886,1.57
+Beijing,1887,1.57
+Beijing,1888,1.63
+Beijing,1888,1.77
+Beijing,1889,1.97
+Beijing,1890,2.08
+Beijing,1890,2.12
+Beijing,1891,2.23
+Beijing,1892,2.17
+Beijing,1893,2.11
+Beijing,1894,2.06
+Beijing,1895,2.01
+Beijing,1896,1.87
+Beijing,1897,1.82
+Beijing,1898,1.99
+Beijing,1899,1.96
+Beijing,1900,2.02
+Beijing,1900,1.98
+Beijing,1901,2.12
+Beijing,1902,2.24
+Beijing,1903,2.13
+Beijing,1904,2.03
+Beijing,1905,2.17
+Beijing,1905,2.2
+Beijing,1906,2.08
+Beijing,1907,1.94
+Beijing,1908,1.82
+Beijing,1909,1.76
+Beijing,1910,1.75
+Beijing,1911,1.62
+Beijing,1912,1.54
+Beijing,1913,1.41
+Beijing,1914,1.28
+Beijing,1914,1.26
+Beijing,1915,1.45
+Beijing,1916,1.63
+Beijing,1917,1.74
+Beijing,1918,1.71
+Beijing,1919,1.54
+Beijing,1919,1.47
+Beijing,1920,1.6
+Beijing,1921,1.8
+Beijing,1922,1.68
+Beijing,1922,1.49
+Beijing,1923,1.32
+Beijing,1924,1.33
+Beijing,1924,1.55
+Beijing,1925,1.67
+Beijing,1925,1.58
+Kyoto / Tokyo,1883,0.2
+Kyoto / Tokyo,1885,0.76
+Kyoto / Tokyo,1887,0.78
+Kyoto / Tokyo,1888,0.82
+Kyoto / Tokyo,1889,0.84
+Kyoto / Tokyo,1890,0.72
+Kyoto / Tokyo,1891,0.56
+Kyoto / Tokyo,1891,0.43
+Kyoto / Tokyo,1892,0.54
+Kyoto / Tokyo,1893,0.53
+Kyoto / Tokyo,1894,0.53
+Kyoto / Tokyo,1895,0.67
+Kyoto / Tokyo,1896,0.91
+Kyoto / Tokyo,1896,0.9
+Kyoto / Tokyo,1897,0.99
+Kyoto / Tokyo,1898,0.97
+Kyoto / Tokyo,1899,0.96
+Kyoto / Tokyo,1900,1.03
+Kyoto / Tokyo,1901,1.09
+Kyoto / Tokyo,1902,1.09
+Kyoto / Tokyo,1903,1.19
+Kyoto / Tokyo,1904,1.16
+Kyoto / Tokyo,1904,1.12
+Kyoto / Tokyo,1905,1.09
+Kyoto / Tokyo,1906,1.05
+Kyoto / Tokyo,1907,0.98
+Kyoto / Tokyo,1908,0.98
+Kyoto / Tokyo,1909,1.11
+Kyoto / Tokyo,1910,1.2
+Kyoto / Tokyo,1911,1.24
+Kyoto / Tokyo,1912,1.27
+Kyoto / Tokyo,1913,1.26
+Kyoto / Tokyo,1913,1.18
+Kyoto / Tokyo,1914,1.14
+Kyoto / Tokyo,1915,1.08
+Kyoto / Tokyo,1914,1.01
+Kyoto / Tokyo,1915,0.64
+Kyoto / Tokyo,1915,0.59
+Kyoto / Tokyo,1916,0.63
+Kyoto / Tokyo,1917,1.07
+Kyoto / Tokyo,1918,1.04
+Kyoto / Tokyo,1919,1.07
+Kyoto / Tokyo,1920,0.8
+Kyoto / Tokyo,1921,0.57
+Kyoto / Tokyo,1922,0.71
+Kyoto / Tokyo,1923,0.54
+Kyoto / Tokyo,1924,0.67
+Kyoto / Tokyo,1925,0.81
+Kyoto / Tokyo,1926,0.95
+Kyoto / Tokyo,1926,0.72
+Kyoto / Tokyo,1927,0.49
+Kyoto / Tokyo,1928,0.69
+Kyoto / Tokyo,1929,1.25
+Kyoto / Tokyo,1930,0.92
+Kyoto / Tokyo,1934,1
+Kyoto / Tokyo,1934,0.82
+Kyoto / Tokyo,1935,0.58
+Kyoto / Tokyo,1936,0.66
+Kyoto / Tokyo,1937,0.65
+Freetown,1881,1.39
+Freetown,1882,1.24
+Freetown,1883,1.24
+Freetown,1884,1.21
+Freetown,1885,1.23
+Freetown,1886,1.37
+Freetown,1887,1.42
+Freetown,1888,1.42
+Freetown,1889,1.41
+Freetown,1890,1.47
+Freetown,1891,1.67
+Freetown,1892,1.7
+Freetown,1894,1.72
+Freetown,1895,1.57
+Freetown,1896,1.51
+Freetown,1897,1.52
+Freetown,1898,1.51
+Freetown,1899,1.52
+Freetown,1899,1.74
+Freetown,1900,1.84
+Freetown,1901,1.84
+Freetown,1902,1.82
+Freetown,1903,1.82
+Freetown,1904,1.82
+Freetown,1905,1.82
+Freetown,1907,1.82
+Freetown,1908,1.82
+Freetown,1909,1.87
+Freetown,1910,1.87
+Freetown,1911,1.9
+Freetown,1912,1.87
+Freetown,1914,1.87
+Freetown,1914,1.87
+Freetown,1917,0.65
+Freetown,1918,0.6
+Freetown,1919,0.93
+Freetown,1919,1.19
+Freetown,1920,1
+Freetown,1920,0.75
+Freetown,1920,0.58
+Freetown,1922,0.58
+Freetown,1922,0.72
+Freetown,1923,0.88
+Freetown,1924,0.98
+Freetown,1926,1.37
+Freetown,1927,1.21
+Freetown,1928,1.14
+Freetown,1929,0.86
+Freetown,1929,1
+Freetown,1930,1.23
+Freetown,1931,1.23
+Freetown,1932,1.18
+Freetown,1932,1.34
+Freetown,1933,1.6
+Freetown,1933,1.85
+Freetown,1933,2.08
+Freetown,1934,2.3
+Freetown,1934,2.59
+Freetown,1934,2.79
+Freetown,1935,2.99
+Freetown,1936,3.12
+Freetown,1938,2.95
+Freetown,1938,2.67
+Freetown,1939,2.03
+Freetown,1940,1.95
+Freetown,1941,2.76
+Freetown,1942,2.74
+Freetown,1943,2.08
+Freetown,1944,2.12
+Freetown,1945,1.06
+Freetown,1946,1.11
+Freetown,1947,1.46
+Freetown,1949,1.59
+Freetown,1950,1.59
+Freetown,1951,2.26
+Freetown,1952,2.36
+Freetown,1953,2.79
+Freetown,1954,2.71
+Freetown,1955,2.33
+Freetown,1956,2.51
+Freetown,1957,2.56
+Freetown,1958,2.38
+Freetown,1959,3.04
+Freetown,1960,3.47
+Freetown,1962,3.91
+Freetown,1963,3.89
+Freetown,1965,3.65
+Freetown,1966,4.19
+Freetown,1967,4.11
+Freetown,1968,3.66
+Freetown,1969,3.71
